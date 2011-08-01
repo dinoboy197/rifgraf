@@ -56,7 +56,7 @@ get '/graphs/:id/sparkline.png' do
 end
 
 get '/graphs/:id.png' do
-  points = Points.data.filter(:graph => params[:id]).order(:timestamp).first(400)
+  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp).first(400)
   content_type :png
   last_modified points.last[:timestamp]
 
@@ -67,10 +67,10 @@ get '/graphs/:id.png' do
     :cht => 'lxy',
     :chco => '3072F3',
     :chma => '0,5,5,25',
-    :chg => '0,14.25,1,4,0,9',
+    :chg => '0,16.4,1,4,0,5',
     :chxt => 'y',
     :chxr => "0,#{values.min},#{values.max}",
-    :chds => "#{timestamps.max},#{timestamps.min},#{values.min},#{values.max}",
+    :chds => "#{timestamps.min},#{timestamps.max},#{values.min},#{values.max}",
     :chd => "t:#{timestamps.join(',')}|#{values.join(',')}",
     :chdl => params[:id],
     :chdlp => 't'
