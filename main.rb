@@ -67,7 +67,7 @@ get '/graphs/:id.png' do
     :cht => 'lxy',
     :chco => '3072F3',
     :chma => '0,5,5,25',
-    :chg => '0,17,1,4,0,9',
+    :chg => '0,14.25,1,4,0,9',
     :chxt => 'y',
     :chxr => "0,#{values.min},#{values.max}",
     :chds => "#{timestamps.max},#{timestamps.min},#{values.min},#{values.max}",
