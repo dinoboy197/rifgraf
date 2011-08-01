@@ -1,5 +1,10 @@
 require 'sinatra'
 require 'sequel'
+require 'sparklines'
+require 'gruff'
+require 'restclient'
+require 'json'
+require 'pp'
 
 module Points
 	def self.data
@@ -33,7 +38,7 @@ get '/' do
 	erb :about
 end
 
-get '/graphs/:id' do
+get '/graphs/:id.html' do
 	graphs_from_params(',').each do |graph|
 		throw :halt, [ 404, "No such graph \"#{graph}\"" ] unless Points.data.filter(:graph => graph).count > 0
 	end
@@ -42,6 +47,24 @@ end
 
 get '/graphs/:id/amstock_settings.xml' do
 	erb :amstock_settings, :locals => { :graphs => graphs_from_params(' ') }
+end
+
+get '/graphs/:id/sparkline.png' do
+  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp).first(400)
+  content_type :png
+  last_modified points.first[:timestamp]
+  Sparklines.plot points.map {|p| p[:value].to_f }, :type => 'smooth'
+end
+
+get '/graphs/:id.png' do
+  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp).first(400)
+  content_type :png
+  last_modified points.first[:timestamp]
+
+  g = Gruff::Line.new
+  g.title = params[:id]
+  g.data 'Hash Rate', points.map {|p| p[:value].to_f}
+  g.to_blob
 end
 
 get '/graphs/:id/data.csv' do
@@ -56,4 +79,10 @@ end
 delete '/graphs/:id' do
 	Points.data.filter(:graph => params[:id]).delete
 	"ok"
+end
+
+get '/pull_data' do
+  stats = JSON.parse(RestClient.get('https://pool.bitp.it/api/pool'))
+  Points.data << { :graph => 'bitp.it', :timestamp => Time.now, :value => stats['ghashes_ps'] }
+  "ok"
 end
