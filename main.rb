@@ -4,6 +4,7 @@ require 'sparklines'
 require 'restclient'
 require 'json'
 require 'pp'
+require 'csv'
 
 module Points
 	def self.data
@@ -76,8 +77,17 @@ get '/graphs/:id.png' do
     :chdlp => 't'
 end
 
-get '/graphs/:id/data.csv' do
-	erb :data, :locals => { :points => Points.data.filter(:graph => params[:id]).reverse_order(:timestamp) }
+get '/graphs/:id.csv' do
+  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp)
+  data = points.map do |point|
+    [point[:timestamp], 0, point[:value]]
+  end
+	# erb :data, :locals => { :data => data }
+  CSV.generate do |csv|
+    data.each do |row|
+      csv << row
+    end
+  end
 end
 
 post '/graphs/:id' do
@@ -95,3 +105,4 @@ get '/pull_data' do
   Points.data << { :graph => 'bitp.it', :timestamp => Time.now, :value => stats['ghashes_ps'] }
   "ok"
 end
+
