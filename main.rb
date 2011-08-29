@@ -101,7 +101,7 @@ delete '/graphs/:id' do
 end
 
 get '/pull_data' do
-  request = RestClient.execute(:method => :get, :url => 'https://pool.bitp.it/api/pool', :timeout => 10)
+  request = RestClient::Request.execute(:method => :get, :url => 'https://pool.bitp.it/api/pool', :timeout => 10)
   stats = JSON.parse(request)
   Points.data << { :graph => 'bitp.it', :timestamp => Time.now, :value => stats['ghashes_ps'] }
   "ok"
