@@ -78,6 +78,7 @@ get '/graphs/:id.png' do
 end
 
 get '/graphs/:id.csv' do
+  content_type :csv
   points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp)
   data = points.map do |point|
     [point[:timestamp], 0, point[:value]]
