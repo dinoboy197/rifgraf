@@ -7,6 +7,10 @@ require 'pp'
 require 'csv'
 
 module Points
+  def self.graph(name)
+    data.filter(:graph => name)
+  end
+  
 	def self.data
 		@@data ||= make
 	end
@@ -22,7 +26,6 @@ module Points
 			varchar :graph, :size => 32
 			varchar :value, :size => 32
 			timestamp :timestamp
-			index :created_at
 			index [:graph, :timestamp]
 		end
 	rescue Sequel::DatabaseError
@@ -42,7 +45,7 @@ end
 
 get '/graphs/:id.html' do
 	graphs_from_params(',').each do |graph|
-		throw :halt, [ 404, "No such graph \"#{graph}\"" ] unless Points.data.filter(:graph => graph).count > 0
+		throw :halt, [ 404, "No such graph \"#{graph}\"" ] unless Points.graph(graph).count > 0
 	end
 	erb :graph, :locals => { :id => params[:id], :others => (params[:and] || '').gsub(/,/, '+') }
 end
@@ -52,14 +55,14 @@ get '/graphs/:id/amstock_settings.xml' do
 end
 
 get '/graphs/:id/sparkline.png' do
-  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp).first(400)
+  points = Points.graph(params[:id]).reverse_order(:timestamp).first(400)
   content_type :png
   last_modified points.first[:timestamp]
   Sparklines.plot points.map {|p| p[:value].to_f }, :type => 'smooth'
 end
 
 get '/graphs/:id.png' do
-  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp).first(400)
+  points = Points.graph(params[:id]).reverse_order(:timestamp).first(400)
   content_type :png
   last_modified points.last[:timestamp]
 
@@ -81,7 +84,7 @@ end
 
 get '/graphs/:id.csv' do
   content_type :csv
-  points = Points.data.filter(:graph => params[:id]).reverse_order(:timestamp)
+  points = Points.graph(params[:id]).reverse_order(:timestamp)
   data = points.map do |point|
     [point[:timestamp], 0, point[:value]]
   end
@@ -99,7 +102,7 @@ post '/graphs/:id' do
 end
 
 delete '/graphs/:id' do
-	Points.data.filter(:graph => params[:id]).delete
+	Points.graph(params[:id]).delete
 	"ok"
 end
 
