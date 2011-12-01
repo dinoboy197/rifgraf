@@ -22,6 +22,8 @@ module Points
 			varchar :graph, :size => 32
 			varchar :value, :size => 32
 			timestamp :timestamp
+			index :created_at
+			index [:graph, :timestamp]
 		end
 	rescue Sequel::DatabaseError
 		# assume table already exists
