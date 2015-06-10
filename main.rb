@@ -1,6 +1,5 @@
 require 'sinatra'
 require 'sequel'
-require 'sparklines'
 require 'restclient'
 require 'json'
 require 'pp'
@@ -52,13 +51,6 @@ end
 
 get '/graphs/:id/amstock_settings.xml' do
 	erb :amstock_settings, :locals => { :graphs => graphs_from_params(' ') }
-end
-
-get '/graphs/:id/sparkline.png' do
-  points = Points.graph(params[:id]).reverse_order(:timestamp).first(400)
-  content_type :png
-  last_modified points.first[:timestamp]
-  Sparklines.plot points.map {|p| p[:value].to_f }, :type => 'smooth'
 end
 
 get '/graphs/:id.png' do
