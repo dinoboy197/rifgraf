@@ -38,6 +38,9 @@ helpers do
 	end
 end
 
+set :views, Proc.new { File.join(File.dirname(__FILE__), "views") }
+set :public, Proc.new { File.join(File.dirname(__FILE__), "public") }
+
 get '/' do
 	erb :about
 end
