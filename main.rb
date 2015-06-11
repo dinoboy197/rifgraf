@@ -49,11 +49,7 @@ get '/graphs/:id.html' do
 	graphs_from_params(',').each do |graph|
 		throw :halt, [ 404, "No such graph \"#{graph}\"" ] unless Points.graph(graph).count > 0
 	end
-	erb :graph, :locals => { :id => params[:id], :others => (params[:and] || '').gsub(/,/, '+') }
-end
-
-get '/graphs/:id/amstock_settings.xml' do
-	erb :amstock_settings, :locals => { :graphs => graphs_from_params(' ') }
+  erb :graph, :locals => { :points => Points.graph(params[:id]).order(:timestamp) }
 end
 
 get '/graphs/:id.png' do
@@ -75,20 +71,6 @@ get '/graphs/:id.png' do
     :chd => "t:#{timestamps.join(',')}|#{values.join(',')}",
     :chdl => params[:id],
     :chdlp => 't'
-end
-
-get '/graphs/:id.csv' do
-  content_type :csv
-  points = Points.graph(params[:id]).reverse_order(:timestamp)
-  data = points.map do |point|
-    [point[:timestamp], 0, point[:value]]
-  end
-	# erb :data, :locals => { :data => data }
-  CSV.generate do |csv|
-    data.each do |row|
-      csv << row
-    end
-  end
 end
 
 post '/graphs/:id' do

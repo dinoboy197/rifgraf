@@ -1,21 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-	<title>rifgraf | <%= id %></title>
-</head>
-<body>
-	<script type="text/javascript" src="/swfobject.js"></script>
-	<div id="flashcontent">
-		<strong>The graph isn't loading.  It requires Flash, maybe you don't have it.</strong>
-	</div>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>amStock Example</title>
+        <link rel="stylesheet" href="/amcharts/style.css" type="text/css">
 
-	<script type="text/javascript">
-		// <![CDATA[
-		var so = new SWFObject("/amstock.swf", "amline", "100%", "100%", "8", "#FFFFFF");
-		so.addVariable("settings_file", escape("/graphs/<%= id %>/amstock_settings.xml?and=<%= others %>"));
-		so.addVariable("preloader_color", "#999999");
-		so.write("flashcontent");
-		// ]]>
-	</script>
-</body>
+        <script src="/amcharts/amcharts.js" type="text/javascript"></script>
+        <script src="/amcharts/serial.js" type="text/javascript"></script>
+        <script src="/amcharts/amstock.js" type="text/javascript"></script>
+
+        <script>
+            var chartData = generateChartData();
+
+            function generateChartData() {
+                var chartData = [
+                <%=
+                points.map do |point|
+                  "{\"date\": new Date(" + point[:timestamp].to_s + "), \"value\": " + point[:value] + "}"
+                end.join(",")
+                %>
+                ];
+                
+                return chartData;
+            }
+
+            var chart = AmCharts.makeChart("chartdiv", {
+
+                    type: "stock",
+
+                    categoryAxesSettings: {
+                        minPeriod: "mm"
+                    },
+
+                    dataSets: [{
+                        color: "#b0de09",
+                        fieldMappings: [{
+                            fromField: "value",
+                            toField: "value"
+                        }],
+
+                        dataProvider: chartData,
+                        categoryField: "date"
+                    }],
+
+
+                    panels: [{
+                            showCategoryAxis: false,
+                            title: "Value",
+                            percentHeight: 70,
+
+                            valueAxes:[{
+                                    id:"v1"
+                                }
+                            ],
+
+                            stockGraphs: [{
+                                id: "g1",
+                                valueField: "value",
+                                type: "smoothedLine",
+                                lineThickness: 2,
+                                bullet: "round"
+                            }],
+
+                            stockLegend: {
+                                valueTextRegular: " ",
+                                markerType: "none"
+                            }
+                        }
+                    ],
+
+                    chartScrollbarSettings: {
+                        graph: "g1",
+                        usePeriod: "10mm",
+                        position: "top"
+                    },
+
+                    chartCursorSettings: {
+                        valueBalloonsEnabled: true,
+                        valueLineBalloonEnabled:true,
+                        valueLineEnabled:true
+                    },
+
+                    periodSelector: {
+                        position: "bottom",
+                        dateFormat: "YYYY-MM-DD HH:NN:SS",
+                        inputFieldWidth: 150,
+                        periods: [{
+                            period: "hh",
+                            count: 1,
+                            label: "1 hour",
+                            selected: true
+
+                        }, {
+                            period: "hh",
+                            count: 2,
+                            label: "2 hours"
+                        }, {
+                            period: "hh",
+                            count: 5,
+                            label: "5 hour"
+                        }, {
+                            period: "hh",
+                            count: 12,
+                            label: "12 hours"
+                        }, {
+                            period: "MAX",
+                            label: "MAX"
+                        }]
+                    },
+
+                    panelsSettings: {
+                        usePrefixes: true
+                    }
+                });
+
+        </script>
+    </head>
+    <body style="background-color:#FFFFFF">
+        <div id="chartdiv" style="width:100%; height:600px;"></div>
+    </body>
+
 </html>
